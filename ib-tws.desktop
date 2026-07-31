@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=IBKR Trader Workstation
+Comment=Trade with Interactive Brokers Trader Workstation
+Exec=ib-tws
+Icon=ib-tws
+Categories=Office;Finance;
+Terminal=false
