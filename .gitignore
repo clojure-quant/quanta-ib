@@ -1,2 +1,11 @@
 .direnv/
 result
+.clj-kondo
+.lsp
+.cpcache
+.nrepl-port
+.calva
+**/target/
+**/log/
+demo/*.log
+*.jar

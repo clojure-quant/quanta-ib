@@ -1,0 +1,18 @@
+/* Copyright (C) 2025 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
+ * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
+
+syntax = "proto3";
+
+package protobuf;
+
+option java_outer_classname = "ErrorMessageProto";
+option java_package = "com.ib.client.protobuf";
+option csharp_namespace = "IBApi.protobuf";
+
+message ErrorMessage {
+    int32 id = 1;
+    int64 errorTime = 2;
+    int32 errorCode = 3;
+    string errorMsg = 4;
+    string advancedOrderRejectJson = 5;
+}

@@ -1,0 +1,37 @@
+/* Copyright (C) 2025 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
+ * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
+
+syntax = "proto3";
+
+package protobuf;
+
+import "ComboLeg.proto";
+import "DeltaNeutralContract.proto";
+
+option java_outer_classname = "ContractProto";
+option java_package = "com.ib.client.protobuf";
+option csharp_namespace = "IBApi.protobuf";
+
+message Contract {
+    int32 conId = 1;
+    string symbol = 2;
+    string secType = 3;
+    string lastTradeDateOrContractMonth = 4;
+    double strike = 5;
+    string right = 6;
+    double multiplier = 7;
+    string exchange = 8;
+    string primaryExch = 9;
+    string currency = 10;
+    string localSymbol = 11;
+    string tradingClass = 12;
+    string secIdType = 13;
+    string secId = 14;
+    string description = 15;
+    string issuerId = 16;
+    DeltaNeutralContract deltaNeutralContract = 17;
+    bool includeExpired = 18;
+    string comboLegsDescrip = 19;
+    repeated ComboLeg comboLegs = 20;
+	string lastTradeDate = 21;
+}

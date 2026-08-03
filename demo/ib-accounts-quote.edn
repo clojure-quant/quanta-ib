@@ -1,0 +1,11 @@
+[{:account/id 1
+  :account/enabled true
+  :account/trader "florian"
+  :account/name "IB paper quote"
+  :account/currency "USD"
+  :account/api :ib-quote
+  :account/notes "Interactive Brokers paper trading (TWS API socket)"
+  :account/settings {:tcp {:host "127.0.0.1"
+                           :port 7497}
+                     :client-id 1
+                     :market-data-type :delayed}}]

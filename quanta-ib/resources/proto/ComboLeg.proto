@@ -1,0 +1,22 @@
+/* Copyright (C) 2025 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
+ * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
+
+syntax = "proto3";
+
+package protobuf;
+
+option java_outer_classname = "ComboLegProto";
+option java_package = "com.ib.client.protobuf";
+option csharp_namespace = "IBApi.protobuf";
+
+message ComboLeg {
+    int32 conId = 1;
+    int32 ratio = 2;
+    string action = 3;
+    string exchange = 4;
+    int32 openClose = 5;
+    int32 shortSalesSlot = 6;
+    string designatedLocation = 7;
+    int32 exemptCode = 8;
+    double perLegPrice = 9;
+}

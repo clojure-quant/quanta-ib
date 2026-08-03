@@ -1,0 +1,10 @@
+{:paths ["src" "resources"]
+ :deps {org.clojure/clojure {:mvn/version "1.11.1"}
+        io.github.clojure-quant/quanta-ib {:local/root "../quanta-ib" :deps/manifest :deps}}
+ :aliases
+ {:nrepl {:extra-deps {nrepl/nrepl {:mvn/version "0.9.0"}
+                       cider/cider-nrepl {:mvn/version "0.28.3"}}
+          :main-opts ["-m" "nrepl.cmdline"]}
+  :quote-print {:exec-fn demo.cli-quote-print/start-cli}
+  :lint {:extra-deps {clj-kondo/clj-kondo {:mvn/version "2024.11.14"}}
+         :main-opts ["-m" "clj-kondo.main" "--fail-level" "error" "--lint" "src"]}}}

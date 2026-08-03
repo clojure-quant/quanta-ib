@@ -1,0 +1,11 @@
+[{:account/id 2
+  :account/enabled true
+  :account/trader "florian"
+  :account/name "IB paper blotter"
+  :account/currency "USD"
+  :account/api :ib-trade
+  :account/notes "Interactive Brokers paper trading blotter (phase 2; not wired yet)"
+  :account/settings {:tcp {:host "127.0.0.1"
+                           :port 7497}
+                     :client-id 2
+                     :market-data-type :delayed}}]
