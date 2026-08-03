@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package protobuf;
+
+import "Contract.proto";
+import "Order.proto";
+
+option java_outer_classname = "OpenOrderProto";
+option java_package = "com.ib.client.protobuf";
+option csharp_namespace = "IBApi.protobuf";
+
+message OpenOrder {
+    int32 orderId = 1;
+    Contract contract = 2;
+    Order order = 3;
+}

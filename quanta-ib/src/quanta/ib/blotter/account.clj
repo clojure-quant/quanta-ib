@@ -1,0 +1,47 @@
+(ns quanta.ib.blotter.account
+  (:require
+   [missionary.core :as m]
+   [quanta.util.boot :refer [boot-with-retry]]
+   [quanta.blotter.protocol :as p]
+   [quanta.blotter.interactor :refer [create-trade-interactor]]
+   [quanta.ib.impl.connect] ;; side effects
+   [quanta.ib.blotter.messaging] ;; side effects
+   ))
+
+(defn- order-bridge [order-rdv req-rdv log]
+  (m/sp
+   (loop []
+     (let [order (m/? order-rdv)]
+       (try
+         (m/? (req-rdv order))
+         (catch Exception ex
+           (log {:type :order-failure
+                 :direction :in
+                 :data {:order order :error (ex-message ex)}}))))
+     (recur))))
+
+(defn- update-bridge [res-rdv push log]
+  (m/sp
+   (loop []
+     (let [update (m/? res-rdv)]
+       (when update
+         (m/? (push update))))
+     (recur))))
+
+(defn- account-log-fn [account-id log]
+  (fn [event]
+    (log (assoc event :account/id account-id))))
+
+(defmethod p/create-trade-account :ib-trade
+  [_ctx account order-rdv update-rdv log]
+  (let [account (assoc account :account/session :ib)
+        {:keys [account/id]} account
+        req-rdv (m/rdv)
+        res-rdv (m/rdv)
+        interactor (create-trade-interactor req-rdv res-rdv)
+        account-log (account-log-fn id log)]
+    (m/sp
+     (m/? (m/join vector
+                  (boot-with-retry account account-log interactor)
+                  (order-bridge order-rdv req-rdv log)
+                  (update-bridge res-rdv update-rdv log))))))

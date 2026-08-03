@@ -1,0 +1,34 @@
+/* Copyright (C) 2025 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
+ * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
+
+syntax = "proto3";
+
+package protobuf;
+
+option java_outer_classname = "ExecutionProto";
+option java_package = "com.ib.client.protobuf";
+option csharp_namespace = "IBApi.protobuf";
+
+message Execution {
+    int32 orderId = 1;
+    string execId = 2;
+    string time = 3;
+    string acctNumber = 4;
+    string exchange = 5;
+    string side = 6;
+    string shares = 7;
+    double price = 8;
+    int64 permId = 9;
+    int32 clientId = 10;
+    bool isLiquidation = 11;
+    string cumQty = 12;
+    double avgPrice = 13;
+    string orderRef = 14;
+    string evRule = 15;
+    double evMultiplier = 16;
+    string modelCode = 17;
+    int32 lastLiquidity = 18;
+    bool isPriceRevisionPending = 19;
+    string submitter = 20;
+    int32 optExerciseOrLapseType = 21;
+}

@@ -19,9 +19,18 @@
 ;;----------------------------------------------------------------------------------
 ;;----------------------------------------------------------------------------------
 
+(declare cis->CancelOrderRequest)
+(declare ecis->CancelOrderRequest)
+(declare new-CancelOrderRequest)
 (declare cis->NextValidId)
 (declare ecis->NextValidId)
 (declare new-NextValidId)
+(declare cis->Order)
+(declare ecis->Order)
+(declare new-Order)
+(declare cis->OpenOrder)
+(declare ecis->OpenOrder)
+(declare new-OpenOrder)
 (declare cis->MarketDataRequest-MarketDataOptionsEntry)
 (declare ecis->MarketDataRequest-MarketDataOptionsEntry)
 (declare new-MarketDataRequest-MarketDataOptionsEntry)
@@ -31,6 +40,15 @@
 (declare cis->TickReqParams)
 (declare ecis->TickReqParams)
 (declare new-TickReqParams)
+(declare cis->OrderStatus)
+(declare ecis->OrderStatus)
+(declare new-OrderStatus)
+(declare cis->Execution)
+(declare ecis->Execution)
+(declare new-Execution)
+(declare cis->ExecutionDetails)
+(declare ecis->ExecutionDetails)
+(declare new-ExecutionDetails)
 (declare cis->DeltaNeutralContract)
 (declare ecis->DeltaNeutralContract)
 (declare new-DeltaNeutralContract)
@@ -55,6 +73,9 @@
 (declare cis->TickString)
 (declare ecis->TickString)
 (declare new-TickString)
+(declare cis->PlaceOrderRequest)
+(declare ecis->PlaceOrderRequest)
+(declare new-PlaceOrderRequest)
 (declare cis->MarketDataType)
 (declare ecis->MarketDataType)
 (declare new-MarketDataType)
@@ -70,6 +91,9 @@
 (declare cis->StartApiRequest)
 (declare ecis->StartApiRequest)
 (declare new-StartApiRequest)
+(declare cis->OrderCancel)
+(declare ecis->OrderCancel)
+(declare new-OrderCancel)
 
 
 ;;----------------------------------------------------------------------------------
@@ -77,6 +101,58 @@
 ;; Message Implementations
 ;;----------------------------------------------------------------------------------
 ;;----------------------------------------------------------------------------------
+
+;-----------------------------------------------------------------------------
+; CancelOrderRequest
+;-----------------------------------------------------------------------------
+(defrecord CancelOrderRequest-record [orderId orderCancel]
+  pb/Writer
+  (serialize [this os]
+    (serdes.core/write-Int32 1  {:optimize true} (:orderId this) os)
+    (serdes.core/write-embedded 2 (:orderCancel this) os))
+  pb/TypeReflection
+  (gettype [this]
+    "com.ib.client.protobuf.CancelOrderRequest"))
+
+(s/def :com.ib.client.protobuf.CancelOrderRequest/orderId int?)
+
+(s/def ::CancelOrderRequest-spec (s/keys :opt-un [:com.ib.client.protobuf.CancelOrderRequest/orderId ]))
+(def CancelOrderRequest-defaults {:orderId 0 })
+
+(defn cis->CancelOrderRequest
+  "CodedInputStream to CancelOrderRequest"
+  [is]
+  (->> (tag-map CancelOrderRequest-defaults
+         (fn [tag index]
+             (case index
+               1 [:orderId (serdes.core/cis->Int32 is)]
+               2 [:orderCancel (ecis->OrderCancel is)]
+
+               [index (serdes.core/cis->undefined tag is)]))
+         is)
+        (map->CancelOrderRequest-record)))
+
+(defn ecis->CancelOrderRequest
+  "Embedded CodedInputStream to CancelOrderRequest"
+  [is]
+  (serdes.core/cis->embedded cis->CancelOrderRequest is))
+
+(defn new-CancelOrderRequest
+  "Creates a new instance from a map, similar to map->CancelOrderRequest except that
+  it properly accounts for nested messages, when applicable.
+  "
+  [init]
+  {:pre [(if (s/valid? ::CancelOrderRequest-spec init) true (throw (ex-info "Invalid input" (s/explain-data ::CancelOrderRequest-spec init))))]}
+  (-> (merge CancelOrderRequest-defaults init)
+      (cond-> (some? (get init :orderCancel)) (update :orderCancel new-OrderCancel))
+      (map->CancelOrderRequest-record)))
+
+(defn pb->CancelOrderRequest
+  "Protobuf to CancelOrderRequest"
+  [input]
+  (cis->CancelOrderRequest (serdes.stream/new-cis input)))
+
+(def ^:protojure.protobuf.any/record CancelOrderRequest-meta {:type "com.ib.client.protobuf.CancelOrderRequest" :decoder pb->CancelOrderRequest})
 
 ;-----------------------------------------------------------------------------
 ; NextValidId
@@ -125,6 +201,131 @@
   (cis->NextValidId (serdes.stream/new-cis input)))
 
 (def ^:protojure.protobuf.any/record NextValidId-meta {:type "com.ib.client.protobuf.NextValidId" :decoder pb->NextValidId})
+
+;-----------------------------------------------------------------------------
+; Order
+;-----------------------------------------------------------------------------
+(defrecord Order-record [action totalQuantity orderType lmtPrice auxPrice tif orderRef transmit]
+  pb/Writer
+  (serialize [this os]
+    (serdes.core/write-String 5  {:optimize true} (:action this) os)
+    (serdes.core/write-String 6  {:optimize true} (:totalQuantity this) os)
+    (serdes.core/write-String 8  {:optimize true} (:orderType this) os)
+    (serdes.core/write-Double 9  {:optimize true} (:lmtPrice this) os)
+    (serdes.core/write-Double 10  {:optimize true} (:auxPrice this) os)
+    (serdes.core/write-String 11  {:optimize true} (:tif this) os)
+    (serdes.core/write-String 28  {:optimize true} (:orderRef this) os)
+    (serdes.core/write-Bool 66  {:optimize true} (:transmit this) os))
+  pb/TypeReflection
+  (gettype [this]
+    "com.ib.client.protobuf.Order"))
+
+(s/def :com.ib.client.protobuf.Order/action string?)
+(s/def :com.ib.client.protobuf.Order/totalQuantity string?)
+(s/def :com.ib.client.protobuf.Order/orderType string?)
+(s/def :com.ib.client.protobuf.Order/lmtPrice float?)
+(s/def :com.ib.client.protobuf.Order/auxPrice float?)
+(s/def :com.ib.client.protobuf.Order/tif string?)
+(s/def :com.ib.client.protobuf.Order/orderRef string?)
+(s/def :com.ib.client.protobuf.Order/transmit boolean?)
+(s/def ::Order-spec (s/keys :opt-un [:com.ib.client.protobuf.Order/action :com.ib.client.protobuf.Order/totalQuantity :com.ib.client.protobuf.Order/orderType :com.ib.client.protobuf.Order/lmtPrice :com.ib.client.protobuf.Order/auxPrice :com.ib.client.protobuf.Order/tif :com.ib.client.protobuf.Order/orderRef :com.ib.client.protobuf.Order/transmit ]))
+(def Order-defaults {:action "" :totalQuantity "" :orderType "" :lmtPrice 0.0 :auxPrice 0.0 :tif "" :orderRef "" :transmit false })
+
+(defn cis->Order
+  "CodedInputStream to Order"
+  [is]
+  (->> (tag-map Order-defaults
+         (fn [tag index]
+             (case index
+               5 [:action (serdes.core/cis->String is)]
+               6 [:totalQuantity (serdes.core/cis->String is)]
+               8 [:orderType (serdes.core/cis->String is)]
+               9 [:lmtPrice (serdes.core/cis->Double is)]
+               10 [:auxPrice (serdes.core/cis->Double is)]
+               11 [:tif (serdes.core/cis->String is)]
+               28 [:orderRef (serdes.core/cis->String is)]
+               66 [:transmit (serdes.core/cis->Bool is)]
+
+               [index (serdes.core/cis->undefined tag is)]))
+         is)
+        (map->Order-record)))
+
+(defn ecis->Order
+  "Embedded CodedInputStream to Order"
+  [is]
+  (serdes.core/cis->embedded cis->Order is))
+
+(defn new-Order
+  "Creates a new instance from a map, similar to map->Order except that
+  it properly accounts for nested messages, when applicable.
+  "
+  [init]
+  {:pre [(if (s/valid? ::Order-spec init) true (throw (ex-info "Invalid input" (s/explain-data ::Order-spec init))))]}
+  (-> (merge Order-defaults init)
+      (map->Order-record)))
+
+(defn pb->Order
+  "Protobuf to Order"
+  [input]
+  (cis->Order (serdes.stream/new-cis input)))
+
+(def ^:protojure.protobuf.any/record Order-meta {:type "com.ib.client.protobuf.Order" :decoder pb->Order})
+
+;-----------------------------------------------------------------------------
+; OpenOrder
+;-----------------------------------------------------------------------------
+(defrecord OpenOrder-record [orderId contract order]
+  pb/Writer
+  (serialize [this os]
+    (serdes.core/write-Int32 1  {:optimize true} (:orderId this) os)
+    (serdes.core/write-embedded 2 (:contract this) os)
+    (serdes.core/write-embedded 3 (:order this) os))
+  pb/TypeReflection
+  (gettype [this]
+    "com.ib.client.protobuf.OpenOrder"))
+
+(s/def :com.ib.client.protobuf.OpenOrder/orderId int?)
+
+
+(s/def ::OpenOrder-spec (s/keys :opt-un [:com.ib.client.protobuf.OpenOrder/orderId ]))
+(def OpenOrder-defaults {:orderId 0 })
+
+(defn cis->OpenOrder
+  "CodedInputStream to OpenOrder"
+  [is]
+  (->> (tag-map OpenOrder-defaults
+         (fn [tag index]
+             (case index
+               1 [:orderId (serdes.core/cis->Int32 is)]
+               2 [:contract (ecis->Contract is)]
+               3 [:order (ecis->Order is)]
+
+               [index (serdes.core/cis->undefined tag is)]))
+         is)
+        (map->OpenOrder-record)))
+
+(defn ecis->OpenOrder
+  "Embedded CodedInputStream to OpenOrder"
+  [is]
+  (serdes.core/cis->embedded cis->OpenOrder is))
+
+(defn new-OpenOrder
+  "Creates a new instance from a map, similar to map->OpenOrder except that
+  it properly accounts for nested messages, when applicable.
+  "
+  [init]
+  {:pre [(if (s/valid? ::OpenOrder-spec init) true (throw (ex-info "Invalid input" (s/explain-data ::OpenOrder-spec init))))]}
+  (-> (merge OpenOrder-defaults init)
+      (cond-> (some? (get init :contract)) (update :contract new-Contract))
+      (cond-> (some? (get init :order)) (update :order new-Order))
+      (map->OpenOrder-record)))
+
+(defn pb->OpenOrder
+  "Protobuf to OpenOrder"
+  [input]
+  (cis->OpenOrder (serdes.stream/new-cis input)))
+
+(def ^:protojure.protobuf.any/record OpenOrder-meta {:type "com.ib.client.protobuf.OpenOrder" :decoder pb->OpenOrder})
 
 ;-----------------------------------------------------------------------------
 ; MarketDataRequest-MarketDataOptionsEntry
@@ -287,6 +488,248 @@
   (cis->TickReqParams (serdes.stream/new-cis input)))
 
 (def ^:protojure.protobuf.any/record TickReqParams-meta {:type "com.ib.client.protobuf.TickReqParams" :decoder pb->TickReqParams})
+
+;-----------------------------------------------------------------------------
+; OrderStatus
+;-----------------------------------------------------------------------------
+(defrecord OrderStatus-record [parentId whyHeld permId lastFillPrice status filled clientId remaining orderId mktCapPrice avgFillPrice]
+  pb/Writer
+  (serialize [this os]
+    (serdes.core/write-Int32 7  {:optimize true} (:parentId this) os)
+    (serdes.core/write-String 10  {:optimize true} (:whyHeld this) os)
+    (serdes.core/write-Int64 6  {:optimize true} (:permId this) os)
+    (serdes.core/write-Double 8  {:optimize true} (:lastFillPrice this) os)
+    (serdes.core/write-String 2  {:optimize true} (:status this) os)
+    (serdes.core/write-String 3  {:optimize true} (:filled this) os)
+    (serdes.core/write-Int32 9  {:optimize true} (:clientId this) os)
+    (serdes.core/write-String 4  {:optimize true} (:remaining this) os)
+    (serdes.core/write-Int32 1  {:optimize true} (:orderId this) os)
+    (serdes.core/write-Double 11  {:optimize true} (:mktCapPrice this) os)
+    (serdes.core/write-Double 5  {:optimize true} (:avgFillPrice this) os))
+  pb/TypeReflection
+  (gettype [this]
+    "com.ib.client.protobuf.OrderStatus"))
+
+(s/def :com.ib.client.protobuf.OrderStatus/parentId int?)
+(s/def :com.ib.client.protobuf.OrderStatus/whyHeld string?)
+(s/def :com.ib.client.protobuf.OrderStatus/permId int?)
+(s/def :com.ib.client.protobuf.OrderStatus/lastFillPrice float?)
+(s/def :com.ib.client.protobuf.OrderStatus/status string?)
+(s/def :com.ib.client.protobuf.OrderStatus/filled string?)
+(s/def :com.ib.client.protobuf.OrderStatus/clientId int?)
+(s/def :com.ib.client.protobuf.OrderStatus/remaining string?)
+(s/def :com.ib.client.protobuf.OrderStatus/orderId int?)
+(s/def :com.ib.client.protobuf.OrderStatus/mktCapPrice float?)
+(s/def :com.ib.client.protobuf.OrderStatus/avgFillPrice float?)
+(s/def ::OrderStatus-spec (s/keys :opt-un [:com.ib.client.protobuf.OrderStatus/parentId :com.ib.client.protobuf.OrderStatus/whyHeld :com.ib.client.protobuf.OrderStatus/permId :com.ib.client.protobuf.OrderStatus/lastFillPrice :com.ib.client.protobuf.OrderStatus/status :com.ib.client.protobuf.OrderStatus/filled :com.ib.client.protobuf.OrderStatus/clientId :com.ib.client.protobuf.OrderStatus/remaining :com.ib.client.protobuf.OrderStatus/orderId :com.ib.client.protobuf.OrderStatus/mktCapPrice :com.ib.client.protobuf.OrderStatus/avgFillPrice ]))
+(def OrderStatus-defaults {:parentId 0 :whyHeld "" :permId 0 :lastFillPrice 0.0 :status "" :filled "" :clientId 0 :remaining "" :orderId 0 :mktCapPrice 0.0 :avgFillPrice 0.0 })
+
+(defn cis->OrderStatus
+  "CodedInputStream to OrderStatus"
+  [is]
+  (->> (tag-map OrderStatus-defaults
+         (fn [tag index]
+             (case index
+               7 [:parentId (serdes.core/cis->Int32 is)]
+               10 [:whyHeld (serdes.core/cis->String is)]
+               6 [:permId (serdes.core/cis->Int64 is)]
+               8 [:lastFillPrice (serdes.core/cis->Double is)]
+               2 [:status (serdes.core/cis->String is)]
+               3 [:filled (serdes.core/cis->String is)]
+               9 [:clientId (serdes.core/cis->Int32 is)]
+               4 [:remaining (serdes.core/cis->String is)]
+               1 [:orderId (serdes.core/cis->Int32 is)]
+               11 [:mktCapPrice (serdes.core/cis->Double is)]
+               5 [:avgFillPrice (serdes.core/cis->Double is)]
+
+               [index (serdes.core/cis->undefined tag is)]))
+         is)
+        (map->OrderStatus-record)))
+
+(defn ecis->OrderStatus
+  "Embedded CodedInputStream to OrderStatus"
+  [is]
+  (serdes.core/cis->embedded cis->OrderStatus is))
+
+(defn new-OrderStatus
+  "Creates a new instance from a map, similar to map->OrderStatus except that
+  it properly accounts for nested messages, when applicable.
+  "
+  [init]
+  {:pre [(if (s/valid? ::OrderStatus-spec init) true (throw (ex-info "Invalid input" (s/explain-data ::OrderStatus-spec init))))]}
+  (-> (merge OrderStatus-defaults init)
+      (map->OrderStatus-record)))
+
+(defn pb->OrderStatus
+  "Protobuf to OrderStatus"
+  [input]
+  (cis->OrderStatus (serdes.stream/new-cis input)))
+
+(def ^:protojure.protobuf.any/record OrderStatus-meta {:type "com.ib.client.protobuf.OrderStatus" :decoder pb->OrderStatus})
+
+;-----------------------------------------------------------------------------
+; Execution
+;-----------------------------------------------------------------------------
+(defrecord Execution-record [isLiquidation evRule shares cumQty orderRef acctNumber side permId evMultiplier execId time clientId modelCode avgPrice exchange orderId submitter price lastLiquidity isPriceRevisionPending optExerciseOrLapseType]
+  pb/Writer
+  (serialize [this os]
+    (serdes.core/write-Bool 11  {:optimize true} (:isLiquidation this) os)
+    (serdes.core/write-String 15  {:optimize true} (:evRule this) os)
+    (serdes.core/write-String 7  {:optimize true} (:shares this) os)
+    (serdes.core/write-String 12  {:optimize true} (:cumQty this) os)
+    (serdes.core/write-String 14  {:optimize true} (:orderRef this) os)
+    (serdes.core/write-String 4  {:optimize true} (:acctNumber this) os)
+    (serdes.core/write-String 6  {:optimize true} (:side this) os)
+    (serdes.core/write-Int64 9  {:optimize true} (:permId this) os)
+    (serdes.core/write-Double 16  {:optimize true} (:evMultiplier this) os)
+    (serdes.core/write-String 2  {:optimize true} (:execId this) os)
+    (serdes.core/write-String 3  {:optimize true} (:time this) os)
+    (serdes.core/write-Int32 10  {:optimize true} (:clientId this) os)
+    (serdes.core/write-String 17  {:optimize true} (:modelCode this) os)
+    (serdes.core/write-Double 13  {:optimize true} (:avgPrice this) os)
+    (serdes.core/write-String 5  {:optimize true} (:exchange this) os)
+    (serdes.core/write-Int32 1  {:optimize true} (:orderId this) os)
+    (serdes.core/write-String 20  {:optimize true} (:submitter this) os)
+    (serdes.core/write-Double 8  {:optimize true} (:price this) os)
+    (serdes.core/write-Int32 18  {:optimize true} (:lastLiquidity this) os)
+    (serdes.core/write-Bool 19  {:optimize true} (:isPriceRevisionPending this) os)
+    (serdes.core/write-Int32 21  {:optimize true} (:optExerciseOrLapseType this) os))
+  pb/TypeReflection
+  (gettype [this]
+    "com.ib.client.protobuf.Execution"))
+
+(s/def :com.ib.client.protobuf.Execution/isLiquidation boolean?)
+(s/def :com.ib.client.protobuf.Execution/evRule string?)
+(s/def :com.ib.client.protobuf.Execution/shares string?)
+(s/def :com.ib.client.protobuf.Execution/cumQty string?)
+(s/def :com.ib.client.protobuf.Execution/orderRef string?)
+(s/def :com.ib.client.protobuf.Execution/acctNumber string?)
+(s/def :com.ib.client.protobuf.Execution/side string?)
+(s/def :com.ib.client.protobuf.Execution/permId int?)
+(s/def :com.ib.client.protobuf.Execution/evMultiplier float?)
+(s/def :com.ib.client.protobuf.Execution/execId string?)
+(s/def :com.ib.client.protobuf.Execution/time string?)
+(s/def :com.ib.client.protobuf.Execution/clientId int?)
+(s/def :com.ib.client.protobuf.Execution/modelCode string?)
+(s/def :com.ib.client.protobuf.Execution/avgPrice float?)
+(s/def :com.ib.client.protobuf.Execution/exchange string?)
+(s/def :com.ib.client.protobuf.Execution/orderId int?)
+(s/def :com.ib.client.protobuf.Execution/submitter string?)
+(s/def :com.ib.client.protobuf.Execution/price float?)
+(s/def :com.ib.client.protobuf.Execution/lastLiquidity int?)
+(s/def :com.ib.client.protobuf.Execution/isPriceRevisionPending boolean?)
+(s/def :com.ib.client.protobuf.Execution/optExerciseOrLapseType int?)
+(s/def ::Execution-spec (s/keys :opt-un [:com.ib.client.protobuf.Execution/isLiquidation :com.ib.client.protobuf.Execution/evRule :com.ib.client.protobuf.Execution/shares :com.ib.client.protobuf.Execution/cumQty :com.ib.client.protobuf.Execution/orderRef :com.ib.client.protobuf.Execution/acctNumber :com.ib.client.protobuf.Execution/side :com.ib.client.protobuf.Execution/permId :com.ib.client.protobuf.Execution/evMultiplier :com.ib.client.protobuf.Execution/execId :com.ib.client.protobuf.Execution/time :com.ib.client.protobuf.Execution/clientId :com.ib.client.protobuf.Execution/modelCode :com.ib.client.protobuf.Execution/avgPrice :com.ib.client.protobuf.Execution/exchange :com.ib.client.protobuf.Execution/orderId :com.ib.client.protobuf.Execution/submitter :com.ib.client.protobuf.Execution/price :com.ib.client.protobuf.Execution/lastLiquidity :com.ib.client.protobuf.Execution/isPriceRevisionPending :com.ib.client.protobuf.Execution/optExerciseOrLapseType ]))
+(def Execution-defaults {:isLiquidation false :evRule "" :shares "" :cumQty "" :orderRef "" :acctNumber "" :side "" :permId 0 :evMultiplier 0.0 :execId "" :time "" :clientId 0 :modelCode "" :avgPrice 0.0 :exchange "" :orderId 0 :submitter "" :price 0.0 :lastLiquidity 0 :isPriceRevisionPending false :optExerciseOrLapseType 0 })
+
+(defn cis->Execution
+  "CodedInputStream to Execution"
+  [is]
+  (->> (tag-map Execution-defaults
+         (fn [tag index]
+             (case index
+               11 [:isLiquidation (serdes.core/cis->Bool is)]
+               15 [:evRule (serdes.core/cis->String is)]
+               7 [:shares (serdes.core/cis->String is)]
+               12 [:cumQty (serdes.core/cis->String is)]
+               14 [:orderRef (serdes.core/cis->String is)]
+               4 [:acctNumber (serdes.core/cis->String is)]
+               6 [:side (serdes.core/cis->String is)]
+               9 [:permId (serdes.core/cis->Int64 is)]
+               16 [:evMultiplier (serdes.core/cis->Double is)]
+               2 [:execId (serdes.core/cis->String is)]
+               3 [:time (serdes.core/cis->String is)]
+               10 [:clientId (serdes.core/cis->Int32 is)]
+               17 [:modelCode (serdes.core/cis->String is)]
+               13 [:avgPrice (serdes.core/cis->Double is)]
+               5 [:exchange (serdes.core/cis->String is)]
+               1 [:orderId (serdes.core/cis->Int32 is)]
+               20 [:submitter (serdes.core/cis->String is)]
+               8 [:price (serdes.core/cis->Double is)]
+               18 [:lastLiquidity (serdes.core/cis->Int32 is)]
+               19 [:isPriceRevisionPending (serdes.core/cis->Bool is)]
+               21 [:optExerciseOrLapseType (serdes.core/cis->Int32 is)]
+
+               [index (serdes.core/cis->undefined tag is)]))
+         is)
+        (map->Execution-record)))
+
+(defn ecis->Execution
+  "Embedded CodedInputStream to Execution"
+  [is]
+  (serdes.core/cis->embedded cis->Execution is))
+
+(defn new-Execution
+  "Creates a new instance from a map, similar to map->Execution except that
+  it properly accounts for nested messages, when applicable.
+  "
+  [init]
+  {:pre [(if (s/valid? ::Execution-spec init) true (throw (ex-info "Invalid input" (s/explain-data ::Execution-spec init))))]}
+  (-> (merge Execution-defaults init)
+      (map->Execution-record)))
+
+(defn pb->Execution
+  "Protobuf to Execution"
+  [input]
+  (cis->Execution (serdes.stream/new-cis input)))
+
+(def ^:protojure.protobuf.any/record Execution-meta {:type "com.ib.client.protobuf.Execution" :decoder pb->Execution})
+
+;-----------------------------------------------------------------------------
+; ExecutionDetails
+;-----------------------------------------------------------------------------
+(defrecord ExecutionDetails-record [reqId contract execution]
+  pb/Writer
+  (serialize [this os]
+    (serdes.core/write-Int32 1  {:optimize true} (:reqId this) os)
+    (serdes.core/write-embedded 2 (:contract this) os)
+    (serdes.core/write-embedded 3 (:execution this) os))
+  pb/TypeReflection
+  (gettype [this]
+    "com.ib.client.protobuf.ExecutionDetails"))
+
+(s/def :com.ib.client.protobuf.ExecutionDetails/reqId int?)
+
+
+(s/def ::ExecutionDetails-spec (s/keys :opt-un [:com.ib.client.protobuf.ExecutionDetails/reqId ]))
+(def ExecutionDetails-defaults {:reqId 0 })
+
+(defn cis->ExecutionDetails
+  "CodedInputStream to ExecutionDetails"
+  [is]
+  (->> (tag-map ExecutionDetails-defaults
+         (fn [tag index]
+             (case index
+               1 [:reqId (serdes.core/cis->Int32 is)]
+               2 [:contract (ecis->Contract is)]
+               3 [:execution (ecis->Execution is)]
+
+               [index (serdes.core/cis->undefined tag is)]))
+         is)
+        (map->ExecutionDetails-record)))
+
+(defn ecis->ExecutionDetails
+  "Embedded CodedInputStream to ExecutionDetails"
+  [is]
+  (serdes.core/cis->embedded cis->ExecutionDetails is))
+
+(defn new-ExecutionDetails
+  "Creates a new instance from a map, similar to map->ExecutionDetails except that
+  it properly accounts for nested messages, when applicable.
+  "
+  [init]
+  {:pre [(if (s/valid? ::ExecutionDetails-spec init) true (throw (ex-info "Invalid input" (s/explain-data ::ExecutionDetails-spec init))))]}
+  (-> (merge ExecutionDetails-defaults init)
+      (cond-> (some? (get init :contract)) (update :contract new-Contract))
+      (cond-> (some? (get init :execution)) (update :execution new-Execution))
+      (map->ExecutionDetails-record)))
+
+(defn pb->ExecutionDetails
+  "Protobuf to ExecutionDetails"
+  [input]
+  (cis->ExecutionDetails (serdes.stream/new-cis input)))
+
+(def ^:protojure.protobuf.any/record ExecutionDetails-meta {:type "com.ib.client.protobuf.ExecutionDetails" :decoder pb->ExecutionDetails})
 
 ;-----------------------------------------------------------------------------
 ; DeltaNeutralContract
@@ -811,6 +1254,62 @@
 (def ^:protojure.protobuf.any/record TickString-meta {:type "com.ib.client.protobuf.TickString" :decoder pb->TickString})
 
 ;-----------------------------------------------------------------------------
+; PlaceOrderRequest
+;-----------------------------------------------------------------------------
+(defrecord PlaceOrderRequest-record [orderId contract order]
+  pb/Writer
+  (serialize [this os]
+    (serdes.core/write-Int32 1  {:optimize true} (:orderId this) os)
+    (serdes.core/write-embedded 2 (:contract this) os)
+    (serdes.core/write-embedded 3 (:order this) os))
+  pb/TypeReflection
+  (gettype [this]
+    "com.ib.client.protobuf.PlaceOrderRequest"))
+
+(s/def :com.ib.client.protobuf.PlaceOrderRequest/orderId int?)
+
+
+(s/def ::PlaceOrderRequest-spec (s/keys :opt-un [:com.ib.client.protobuf.PlaceOrderRequest/orderId ]))
+(def PlaceOrderRequest-defaults {:orderId 0 })
+
+(defn cis->PlaceOrderRequest
+  "CodedInputStream to PlaceOrderRequest"
+  [is]
+  (->> (tag-map PlaceOrderRequest-defaults
+         (fn [tag index]
+             (case index
+               1 [:orderId (serdes.core/cis->Int32 is)]
+               2 [:contract (ecis->Contract is)]
+               3 [:order (ecis->Order is)]
+
+               [index (serdes.core/cis->undefined tag is)]))
+         is)
+        (map->PlaceOrderRequest-record)))
+
+(defn ecis->PlaceOrderRequest
+  "Embedded CodedInputStream to PlaceOrderRequest"
+  [is]
+  (serdes.core/cis->embedded cis->PlaceOrderRequest is))
+
+(defn new-PlaceOrderRequest
+  "Creates a new instance from a map, similar to map->PlaceOrderRequest except that
+  it properly accounts for nested messages, when applicable.
+  "
+  [init]
+  {:pre [(if (s/valid? ::PlaceOrderRequest-spec init) true (throw (ex-info "Invalid input" (s/explain-data ::PlaceOrderRequest-spec init))))]}
+  (-> (merge PlaceOrderRequest-defaults init)
+      (cond-> (some? (get init :contract)) (update :contract new-Contract))
+      (cond-> (some? (get init :order)) (update :order new-Order))
+      (map->PlaceOrderRequest-record)))
+
+(defn pb->PlaceOrderRequest
+  "Protobuf to PlaceOrderRequest"
+  [input]
+  (cis->PlaceOrderRequest (serdes.stream/new-cis input)))
+
+(def ^:protojure.protobuf.any/record PlaceOrderRequest-meta {:type "com.ib.client.protobuf.PlaceOrderRequest" :decoder pb->PlaceOrderRequest})
+
+;-----------------------------------------------------------------------------
 ; MarketDataType
 ;-----------------------------------------------------------------------------
 (defrecord MarketDataType-record [reqId marketDataType]
@@ -1067,4 +1566,58 @@
   (cis->StartApiRequest (serdes.stream/new-cis input)))
 
 (def ^:protojure.protobuf.any/record StartApiRequest-meta {:type "com.ib.client.protobuf.StartApiRequest" :decoder pb->StartApiRequest})
+
+;-----------------------------------------------------------------------------
+; OrderCancel
+;-----------------------------------------------------------------------------
+(defrecord OrderCancel-record [manualOrderCancelTime extOperator manualOrderIndicator]
+  pb/Writer
+  (serialize [this os]
+    (serdes.core/write-String 1  {:optimize true} (:manualOrderCancelTime this) os)
+    (serdes.core/write-String 2  {:optimize true} (:extOperator this) os)
+    (serdes.core/write-Int32 3  {:optimize true} (:manualOrderIndicator this) os))
+  pb/TypeReflection
+  (gettype [this]
+    "com.ib.client.protobuf.OrderCancel"))
+
+(s/def :com.ib.client.protobuf.OrderCancel/manualOrderCancelTime string?)
+(s/def :com.ib.client.protobuf.OrderCancel/extOperator string?)
+(s/def :com.ib.client.protobuf.OrderCancel/manualOrderIndicator int?)
+(s/def ::OrderCancel-spec (s/keys :opt-un [:com.ib.client.protobuf.OrderCancel/manualOrderCancelTime :com.ib.client.protobuf.OrderCancel/extOperator :com.ib.client.protobuf.OrderCancel/manualOrderIndicator ]))
+(def OrderCancel-defaults {:manualOrderCancelTime "" :extOperator "" :manualOrderIndicator 0 })
+
+(defn cis->OrderCancel
+  "CodedInputStream to OrderCancel"
+  [is]
+  (->> (tag-map OrderCancel-defaults
+         (fn [tag index]
+             (case index
+               1 [:manualOrderCancelTime (serdes.core/cis->String is)]
+               2 [:extOperator (serdes.core/cis->String is)]
+               3 [:manualOrderIndicator (serdes.core/cis->Int32 is)]
+
+               [index (serdes.core/cis->undefined tag is)]))
+         is)
+        (map->OrderCancel-record)))
+
+(defn ecis->OrderCancel
+  "Embedded CodedInputStream to OrderCancel"
+  [is]
+  (serdes.core/cis->embedded cis->OrderCancel is))
+
+(defn new-OrderCancel
+  "Creates a new instance from a map, similar to map->OrderCancel except that
+  it properly accounts for nested messages, when applicable.
+  "
+  [init]
+  {:pre [(if (s/valid? ::OrderCancel-spec init) true (throw (ex-info "Invalid input" (s/explain-data ::OrderCancel-spec init))))]}
+  (-> (merge OrderCancel-defaults init)
+      (map->OrderCancel-record)))
+
+(defn pb->OrderCancel
+  "Protobuf to OrderCancel"
+  [input]
+  (cis->OrderCancel (serdes.stream/new-cis input)))
+
+(def ^:protojure.protobuf.any/record OrderCancel-meta {:type "com.ib.client.protobuf.OrderCancel" :decoder pb->OrderCancel})
 

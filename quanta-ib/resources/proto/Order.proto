@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package protobuf;
+
+option java_outer_classname = "OrderProto";
+option java_package = "com.ib.client.protobuf";
+option csharp_namespace = "IBApi.protobuf";
+
+// Curated subset of IB Order.proto (field numbers preserved).
+// Full Order is too large for protoc-gen-clojure (JVM method size limit).
+message Order {
+    string action = 5;
+    string totalQuantity = 6;
+    string orderType = 8;
+    double lmtPrice = 9;
+    double auxPrice = 10;
+    string tif = 11;
+    string orderRef = 28;
+    bool transmit = 66;
+}

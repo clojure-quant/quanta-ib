@@ -105,6 +105,21 @@
    ids/REQ-MARKET-DATA-TYPE
    (pb/new-MarketDataTypeRequest {:marketDataType (int market-data-type)})))
 
+(defn encode-place-order
+  [{:keys [order-id contract order]}]
+  (encode-protobuf-payload
+   ids/PLACE-ORDER
+   (pb/new-PlaceOrderRequest {:orderId (int order-id)
+                              :contract contract
+                              :order order})))
+
+(defn encode-cancel-order
+  [{:keys [order-id]}]
+  (encode-protobuf-payload
+   ids/CANCEL-ORDER
+   (pb/new-CancelOrderRequest {:orderId (int order-id)
+                               :orderCancel {}})))
+
 (defn- decode-protobuf-body
   [classic-id ^bytes body]
   (case classic-id
@@ -118,14 +133,53 @@
         [:tick-size {:req-id (:reqId m)
                      :tick-type (:tickType m)
                      :size (:size m)}])
+    3 (let [m (pb/pb->OrderStatus body)]
+        [:order-status {:order-id (:orderId m)
+                        :status (:status m)
+                        :filled (:filled m)
+                        :remaining (:remaining m)
+                        :avg-fill-price (:avgFillPrice m)
+                        :perm-id (:permId m)
+                        :parent-id (:parentId m)
+                        :last-fill-price (:lastFillPrice m)
+                        :client-id (:clientId m)
+                        :why-held (:whyHeld m)
+                        :mkt-cap-price (:mktCapPrice m)}])
     4 (let [m (pb/pb->ErrorMessage body)]
         [:error {:id (:id m)
                  :error-time (:errorTime m)
                  :error-code (:errorCode m)
                  :error-msg (:errorMsg m)
                  :advanced-order-reject-json (:advancedOrderRejectJson m)}])
+    5 (let [m (pb/pb->OpenOrder body)]
+        [:open-order {:order-id (:orderId m)
+                      :contract (:contract m)
+                      :order (:order m)
+                      :order-state (:orderState m)}])
     9 (let [m (pb/pb->NextValidId body)]
         [:next-valid-id {:order-id (:orderId m)}])
+    11 (let [m (pb/pb->ExecutionDetails body)
+              ex (:execution m)]
+        [:execution-details {:req-id (:reqId m)
+                             :contract (:contract m)
+                             :execution {:order-id (:orderId ex)
+                                         :exec-id (:execId ex)
+                                         :time (:time ex)
+                                         :acct-number (:acctNumber ex)
+                                         :exchange (:exchange ex)
+                                         :side (:side ex)
+                                         :shares (:shares ex)
+                                         :price (:price ex)
+                                         :perm-id (:permId ex)
+                                         :client-id (:clientId ex)
+                                         :liquidation (:isLiquidation ex)
+                                         :cum-qty (:cumQty ex)
+                                         :avg-price (:avgPrice ex)
+                                         :order-ref (:orderRef ex)
+                                         :ev-rule (:evRule ex)
+                                         :ev-multiplier (:evMultiplier ex)
+                                         :model-code (:modelCode ex)
+                                         :last-liquidity (:lastLiquidity ex)}}])
     15 (let [m (pb/pb->ManagedAccounts body)]
         [:managed-accounts {:accounts-list (:accountsList m)}])
     45 (let [m (pb/pb->TickGeneric body)]
@@ -178,6 +232,12 @@
 
             :cancel-market-data-requests
             (mapv (fn [{:keys [req-id]}] (encode-cancel-market-data req-id)) data)
+
+            :place-order
+            [(encode-place-order data)]
+
+            :cancel-order
+            [(encode-cancel-order data)]
 
             (throw (ex-info "unsupported outbound ib payload"
                             {:msg-type msg-type}))))))

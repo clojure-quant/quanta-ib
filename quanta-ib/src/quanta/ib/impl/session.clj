@@ -50,8 +50,9 @@
      (m/? (tcp-push frame)))))
 
 (defn- await-ready
-  "After StartAPI, wait until next-valid-id (accept managed-accounts / info errors)."
-  [pull log*]
+  "After StartAPI, wait until next-valid-id (accept managed-accounts / info errors).
+   Stores the starting IB order id into `next-order-id-a` when provided."
+  [pull log* next-order-id-a]
   (m/sp
    (loop [n 0]
      (let [[msg-type payload] (m/? (pull))]
@@ -59,6 +60,8 @@
        (case msg-type
          :next-valid-id
          (do
+           (when next-order-id-a
+             (reset! next-order-id-a (:order-id payload)))
            (log* {:type :connection-status :data :next-valid-id :order-id (:order-id payload)})
            true)
 
@@ -85,6 +88,8 @@
         settings (:account/settings account)
         client-id (or (:client-id settings)
                       (throw (ex-info "missing :client-id in account/settings" {})))
+        next-order-id-a (atom nil)
+        account (assoc account :ib/next-order-id-a next-order-id-a)
         log* (fn [event]
                (log (assoc event :connection-id connection-id)))
         tcp-push (:push tcp-socket)
@@ -102,7 +107,12 @@
                    server-version (:server-version hello)
                    _ (dbg "session: server-version" server-version)
                    _ (log* (assoc hello :type :server-hello))]
-               (when (< server-version ids/MIN-SERVER-VER-PROTOBUF-MARKET-DATA)
+               (when (< server-version ids/MIN-SERVER-VER-PROTOBUF-PLACE-ORDER)
+                 (throw (ex-info "TWS server too old for protobuf place/cancel order"
+                                 {:server-version server-version
+                                  :required ids/MIN-SERVER-VER-PROTOBUF-PLACE-ORDER})))
+               (when (and (:market-data-type settings)
+                          (< server-version ids/MIN-SERVER-VER-PROTOBUF-MARKET-DATA))
                  (throw (ex-info "TWS server too old for protobuf market data"
                                  {:server-version server-version
                                   :required ids/MIN-SERVER-VER-PROTOBUF-MARKET-DATA})))
@@ -115,7 +125,7 @@
                         (dbg "session: sending startAPI client-id" client-id)
                         (log* {:type :connection-status :data :connecting})
                         (m/? (push [:start-api {:client-id client-id}]))
-                        (m/? (await-ready pull log*))
+                        (m/? (await-ready pull log* next-order-id-a))
                         (when-let [mdt (:market-data-type settings)]
                           (let [code (or (market-data-type->int mdt)
                                          (when (int? mdt) mdt)

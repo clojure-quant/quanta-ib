@@ -65,6 +65,70 @@
     (.put bb pb-bytes)
     (.array bb)))
 
+(deftest place-order-encode-roundtrip
+  (let [payload (codec/encode-place-order
+                 {:order-id 11
+                  :contract {:symbol "AMZN" :secType "STK" :currency "USD" :exchange "SMART"}
+                  :order {:action "BUY"
+                          :orderType "LMT"
+                          :totalQuantity "1"
+                          :lmtPrice 50.0
+                          :tif "DAY"
+                          :transmit true
+                          :orderRef "o1"}})
+        body (java.util.Arrays/copyOfRange payload 4 (alength payload))
+        decoded (pb/pb->PlaceOrderRequest body)]
+    (is (= 11 (:orderId decoded)))
+    (is (= "AMZN" (get-in decoded [:contract :symbol])))
+    (is (= "BUY" (get-in decoded [:order :action])))
+    (is (= "LMT" (get-in decoded [:order :orderType])))
+    (is (true? (get-in decoded [:order :transmit])))
+    (is (= "o1" (get-in decoded [:order :orderRef])))))
+
+(deftest order-status-and-execution-decode
+  (let [[t1 d1] (codec/decode-frame
+                 (frame-for ids/ORDER-STATUS
+                            (protojure/->pb (pb/new-OrderStatus
+                                             {:orderId 9
+                                              :status "Submitted"
+                                              :filled "0"
+                                              :remaining "1"
+                                              :avgFillPrice 0.0
+                                              :permId 1
+                                              :parentId 0
+                                              :lastFillPrice 0.0
+                                              :clientId 2
+                                              :whyHeld ""
+                                              :mktCapPrice 0.0}))))
+        [t2 d2] (codec/decode-frame
+                 (frame-for ids/EXECUTION-DATA
+                            (protojure/->pb
+                             (pb/new-ExecutionDetails
+                              {:reqId 0
+                               :contract {:symbol "AMZN" :secType "STK" :currency "USD"}
+                               :execution {:orderId 9
+                                           :execId "E99"
+                                           :shares "1"
+                                           :price 185.0
+                                           :side "BOT"
+                                           :orderRef "o1"}}))))]
+    (is (= :order-status t1))
+    (is (= 9 (:order-id d1)))
+    (is (= "Submitted" (:status d1)))
+    (is (= :execution-details t2))
+    (is (= 9 (get-in d2 [:execution :order-id])))
+    (is (= "E99" (get-in d2 [:execution :exec-id])))))
+
+(deftest encode-outbound-place-and-cancel
+  (let [place (codec/encode-outbound
+               [:place-order {:order-id 1
+                              :contract {:symbol "MSFT" :secType "STK" :currency "USD" :exchange "SMART"}
+                              :order {:action "BUY" :orderType "MKT" :totalQuantity "1"
+                                      :tif "DAY" :transmit true :orderRef "x"}}])
+        cancel (codec/encode-outbound [:cancel-order {:order-id 1}])]
+    (is (= 1 (count place)))
+    (is (= 1 (count cancel)))))
+
 (deftest tick-string-generic-req-params-decode
   (let [[t1 d1] (codec/decode-frame
                  (frame-for ids/TICK-STRING

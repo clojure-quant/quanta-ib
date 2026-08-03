@@ -9,7 +9,7 @@ TWS socket API (V100 framing + protobuf via [protojure](https://protojure.readth
 
 - Nix TWS package: `flake.nix`, `package.nix` (`nix run .`)
 - `quanta-ib/` — Clojure library (`io.github.clojure-quant/quanta-ib`)
-- `demo/` — quote print demo against paper TWS
+- `demo/` — quote print + blotter trade demos against paper TWS
 
 ## TWS (Nix)
 
@@ -29,18 +29,33 @@ Writable TWS config lives in `~/.tws`. Enable the API in TWS
 
 See [TWS-NIX.md](TWS-NIX.md) for packaging details.
 
-## quanta-ib (phase 1: quotes)
+## quanta-ib
 
-Phase 1 implements quote subscribe/unsubscribe for:
+### Quotes (`:ib-quote`)
+
+Subscribe/unsubscribe for:
 
 - `EURUSD` → IDEALPRO CASH EUR/USD
 - `USDJPY` → IDEALPRO CASH USD/JPY
 - `AMZN` / `MSFT` → SMART STK USD (US equities; use delayed market-data-type on paper)
 
 Account settings are EDN-driven (no hardcoded host/port defaults), e.g.
-[`demo/ib-accounts-quote.edn`](demo/ib-accounts-quote.edn). Blotter account
-settings live in [`demo/ib-accounts-blotter.edn`](demo/ib-accounts-blotter.edn)
-(trade messaging not wired yet).
+[`demo/ib-accounts-quote.edn`](demo/ib-accounts-quote.edn) (client-id `1`).
+
+### Blotter (`:ib-trade`)
+
+Order routing for `:limit`, `:market`, and `:stop` (trigger in `:limit` → IB `auxPrice`):
+
+- outbound: `placeOrder` / `cancelOrder` (modify = second `placeOrder` with same IB order id)
+- inbound: `OrderStatus` → confirmed/canceled; `ExecutionDetails` → fills; order-id errors → rejects
+- blotter string order ids are stored in IB `orderRef`; IB integer ids come from `NextValidId`
+
+Blotter account: [`demo/ib-accounts-blotter.edn`](demo/ib-accounts-blotter.edn)
+(client-id `2` — must differ from the quote client).
+
+Protobufs are a curated quote+trade subset (not all ~203 IB protos). `Order.proto` is
+slimmed to the fields we encode/decode — full Order exceeds the JVM method-size limit
+under `protoc-gen-clojure`. Regenerate with `quanta-ib/scripts/gen-protos.sh`.
 
 ### Test
 
@@ -55,6 +70,14 @@ cd quanta-ib && clojure -X:test
 
 ```bash
 cd demo && clojure -X:quote-print
+```
+
+### Trade demo (paper TWS)
+
+Uses far-from-market AMZN/MSFT limits so you can observe confirm + cancel without fills:
+
+```bash
+cd demo && clojure -X:blotter-trade
 ```
 
 ## References
