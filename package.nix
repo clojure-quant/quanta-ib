@@ -23,7 +23,7 @@ let
 
     src = pkgs.fetchurl {
       url = "https://download2.interactivebrokers.com/installers/tws/stable-standalone/tws-stable-standalone-linux-x64.sh";
-      hash = "sha256-GkTIMbhr4bEeX2oImsxkBXc2ZT9pdhL88pEfNPIm2vE=";
+      hash = "sha256-+hm3dgJ+q23fmddTqsV/4b62sG4xHqpU/6g0M/7p6YY=";
       executable = true;
     };
 
