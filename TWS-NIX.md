@@ -11,9 +11,9 @@ downloaded or executed when TWS starts, and Steam is not used.
 
 ## Version
 
-- TWS Offline Stable: `10.45.1i`
+- TWS Offline Stable: `10.45.1j`
 - Platform: `x86_64-linux`
-- Installer SHA-256: `sha256-MzSNA13lYodToQOuRD0XZoIKj5r2nTmESCuVVeLLqQI=`
+- Installer SHA-256: `sha256-GkTIMbhr4bEeX2oImsxkBXc2ZT9pdhL88pEfNPIm2vE=`
 
 ## Run
 
