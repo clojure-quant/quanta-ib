@@ -1,0 +1,43 @@
+name: Update TWS pin
+
+on:
+  schedule:
+    # Daily 06:00 UTC. IB overwrites the Offline Stable URL when they ship a build.
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            extra-experimental-features = nix-command flakes
+
+      - name: Bump installer version and hash if IB published a new build
+        run: ./scripts/update-tws-pin.sh
+
+      - name: Open pull request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: update-tws-pin
+          delete-branch: true
+          title: "Bump IB TWS Offline Stable pin to ${{ env.TWS_VERSION }}"
+          commit-message: |
+            Bump IB TWS Offline Stable pin to ${{ env.TWS_VERSION }}.
+
+            IB replaced the stable-standalone installer; refresh version and fetchurl hash.
+          body: |
+            Automated daily check of IBKR `version.json` for Offline Stable.
+
+            After merge, consumers should run `nix flake update ib` (or equivalent) so the lock follows this pin.
+          add-paths: |
+            package.nix
+            TWS-NIX.md

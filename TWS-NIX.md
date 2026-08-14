@@ -72,6 +72,16 @@ Add the package directly from the flake:
 }
 ```
 
-Interactive Brokers publishes Offline Stable as a fixed, non-updating build.
-Updating this package requires changing the version and source hash when IBKR
-publishes a new stable installer.
+Interactive Brokers publishes Offline Stable as a floating URL (no versioned
+download). This repo pins `version` + `hash` in `package.nix`. A daily GitHub
+Action checks
+`https://download2.interactivebrokers.com/installers/tws/stable-standalone/version.json`
+and opens a PR when `buildVersion` changes. Locally:
+
+```console
+./scripts/update-tws-pin.sh
+```
+
+The prefetch must use `nix-prefetch-url --executable` so the NAR hash matches
+`fetchurl { executable = true; }`. After merging a pin bump, flake consumers
+run `nix flake update ib`.
