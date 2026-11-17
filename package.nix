@@ -19,11 +19,11 @@ let
 
   ibTwsUnwrapped = pkgs.stdenvNoCC.mkDerivation {
     pname = "ib-tws-unwrapped";
-    version = "10.45.1j";
+    version = "10.50.1h";
 
     src = pkgs.fetchurl {
       url = "https://download2.interactivebrokers.com/installers/tws/stable-standalone/tws-stable-standalone-linux-x64.sh";
-      hash = "sha256-+hm3dgJ+q23fmddTqsV/4b62sG4xHqpU/6g0M/7p6YY=";
+      hash = "sha256-FOywRhPwhT6I3P1Q3L6pQ4399aB0vLArj1/89+4IpaM=";
       executable = true;
     };
 
